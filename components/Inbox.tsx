@@ -20,7 +20,8 @@ import { db } from '@/lib/firestore';
 interface Message {
     id: string;
     text: string;
-    sender: string; // 'user' | 'fred' | 'antigravity'
+    sender: string;
+    senderType?: string;
     createdAt: Timestamp;
 }
 
@@ -48,11 +49,28 @@ export default function Inbox() {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
+        const isAntigravityCalled = newMessage.includes('@Antigravity') || newMessage.includes('@antigravity');
+
         try {
             await addDoc(collection(db, 'messages'), {
+                conversationId: 'main',
                 text: newMessage,
                 sender: 'Commander',
-                createdAt: serverTimestamp()
+                senderType: 'human',
+                source: 'web',
+                channel: 'web',
+                createdAt: serverTimestamp(),
+
+                routing: {
+                    needsFredReply: true,
+                    forwardToTelegram: false,
+                    forAntigravity: isAntigravityCalled
+                },
+                state: {
+                    handledByFred: false,
+                    processing: false,
+                    attempts: 0
+                }
             });
             setNewMessage('');
         } catch (error) {
@@ -80,7 +98,7 @@ export default function Inbox() {
                 )}
 
                 {messages.map((msg) => {
-                    const isUser = ['user', 'commander', 'casey'].includes(msg.sender.toLowerCase());
+                    const isUser = msg.senderType === 'human' || ['user', 'commander', 'casey'].includes((msg.sender || '').toLowerCase());
                     return (
                         <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                             <div className={`flex gap-2 max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -97,7 +115,7 @@ export default function Inbox() {
                                     }`}>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold uppercase ${isUser ? 'text-vermilion-400' : 'text-zinc-400'}`}>
-                                            {(msg.sender === 'user' || msg.sender === 'Commander') ? 'You' : msg.sender}
+                                            {isUser ? 'Me' : msg.sender}
                                         </span>
                                         {msg.createdAt && (
                                             <span className="text-[10px] opacity-50">
