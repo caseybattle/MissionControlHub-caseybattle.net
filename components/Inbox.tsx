@@ -80,7 +80,7 @@ export default function Inbox() {
                 )}
 
                 {messages.map((msg) => {
-                    const isUser = msg.sender === 'user' || msg.sender === 'Commander';
+                    const isUser = ['user', 'commander', 'casey'].includes(msg.sender.toLowerCase());
                     return (
                         <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                             <div className={`flex gap-2 max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
