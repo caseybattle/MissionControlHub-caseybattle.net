@@ -1,17 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FirestoreCard, subscribeToCards } from '@/lib/firestore';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, CalendarDays } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+function toDate(value: any): Date | null {
+    try {
+        if (!value) return null;
+        if (typeof value?.toDate === 'function') return value.toDate();
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+    } catch {
+        return null;
+    }
+}
+
+function dateKeyFromDate(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function CalendarView() {
     const [cards, setCards] = useState<FirestoreCard[]>([]);
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
     useEffect(() => {
         const unsub = subscribeToCards(setCards);
@@ -28,39 +44,23 @@ export default function CalendarView() {
     const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
     const goToday = () => setCurrentDate(new Date());
 
-    // Group cards by due date
-    const cardsByDate = new Map<string, FirestoreCard[]>();
-    cards.forEach(card => {
-        if (card.dueDate) {
-            try {
-                let key: string;
-                if (typeof card.dueDate === 'string') {
-                    key = card.dueDate;
-                } else if (typeof (card.dueDate as any).toDate === 'function') {
-                    const d = (card.dueDate as any).toDate();
-                    key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                } else {
-                    key = String(card.dueDate);
-                }
-                if (!cardsByDate.has(key)) cardsByDate.set(key, []);
-                cardsByDate.get(key)!.push(card);
-            } catch { /* skip */ }
-        }
-    });
+    // Group cards by dueDate or createdAt as fallback.
+    const cardsByDate = useMemo(() => {
+        const map = new Map<string, FirestoreCard[]>();
 
-    // Also group by createdAt for cards without due dates
-    cards.forEach(card => {
-        if (!card.dueDate && card.createdAt) {
-            try {
-                const d = typeof (card.createdAt as any).toDate === 'function'
-                    ? (card.createdAt as any).toDate()
-                    : new Date(card.createdAt as any);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                if (!cardsByDate.has(key)) cardsByDate.set(key, []);
-                cardsByDate.get(key)!.push(card);
-            } catch { /* skip invalid dates */ }
-        }
-    });
+        cards.forEach(card => {
+            const due = toDate(card.dueDate as any);
+            const created = toDate(card.createdAt as any);
+            const target = due || created;
+            if (!target) return;
+
+            const key = dateKeyFromDate(target);
+            if (!map.has(key)) map.set(key, []);
+            map.get(key)!.push(card);
+        });
+
+        return map;
+    }, [cards]);
 
     // Build calendar grid
     const cells: (number | null)[] = [];
@@ -68,11 +68,9 @@ export default function CalendarView() {
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     while (cells.length % 7 !== 0) cells.push(null);
 
-    const getDateKey = (day: number) =>
-        `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const getDateKey = (day: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-    const isToday = (day: number) =>
-        day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    const isToday = (day: number) => day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
     const statusColor = (status: string) => {
         switch (status) {
@@ -82,6 +80,14 @@ export default function CalendarView() {
             default: return '#6b7280';
         }
     };
+
+    const selectedItems = selectedDateKey ? (cardsByDate.get(selectedDateKey) || []) : [];
+
+    const selectedDateLabel = useMemo(() => {
+        if (!selectedDateKey) return '';
+        const d = new Date(`${selectedDateKey}T00:00:00`);
+        return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }, [selectedDateKey]);
 
     return (
         <div className="h-full flex flex-col">
@@ -121,19 +127,19 @@ export default function CalendarView() {
                     const dateKey = day ? getDateKey(day) : '';
                     const dayCards = day ? (cardsByDate.get(dateKey) || []) : [];
                     const todayClass = day && isToday(day);
+                    const selected = day && selectedDateKey === dateKey;
 
                     return (
-                        <div
+                        <button
                             key={i}
-                            className={`border-b border-r border-zinc-800 p-1 md:p-1.5 min-h-[60px] md:min-h-[90px] relative transition-colors ${day ? 'hover:bg-zinc-900/50' : 'bg-zinc-950/30'
-                                }`}
+                            type="button"
+                            onClick={() => day && setSelectedDateKey(dateKey)}
+                            className={`text-left border-b border-r border-zinc-800 p-1 md:p-1.5 min-h-[60px] md:min-h-[90px] relative transition-colors ${day ? 'hover:bg-zinc-900/50' : 'bg-zinc-950/30'} ${selected ? 'bg-zinc-900/70 ring-1 ring-vermilion-500/50' : ''}`}
+                            disabled={!day}
                         >
                             {day && (
                                 <>
-                                    <div className={`text-[10px] md:text-xs font-semibold mb-0.5 md:mb-1 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full ${todayClass
-                                        ? 'bg-vermilion-500 text-white'
-                                        : 'text-zinc-400'
-                                        }`}>
+                                    <div className={`text-[10px] md:text-xs font-semibold mb-0.5 md:mb-1 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full ${todayClass ? 'bg-vermilion-500 text-white' : 'text-zinc-400'}`}>
                                         {day}
                                     </div>
                                     <div className="space-y-0.5 overflow-hidden max-h-[35px] md:max-h-[60px]">
@@ -152,17 +158,68 @@ export default function CalendarView() {
                                             </div>
                                         ))}
                                         {dayCards.length > 2 && (
-                                            <div className="text-[9px] text-zinc-600 pl-1">
-                                                +{dayCards.length - 2} more
-                                            </div>
+                                            <div className="text-[9px] text-zinc-600 pl-1">+{dayCards.length - 2} more</div>
                                         )}
                                     </div>
                                 </>
                             )}
-                        </div>
+                        </button>
                     );
                 })}
             </div>
+
+            {/* Day Drilldown Drawer */}
+            {selectedDateKey && (
+                <div className="mt-4 border border-zinc-800 rounded-xl bg-zinc-950/60 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <CalendarDays className="w-4 h-4 text-vermilion-400" />
+                            <div>
+                                <div className="text-sm text-white font-semibold">{selectedDateLabel}</div>
+                                <div className="text-xs text-zinc-500">{selectedItems.length} item{selectedItems.length === 1 ? '' : 's'}</div>
+                            </div>
+                        </div>
+                        <button className="p-1.5 rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white" onClick={() => setSelectedDateKey(null)}>
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="max-h-[280px] overflow-y-auto">
+                        {selectedItems.length === 0 ? (
+                            <div className="px-4 py-6 text-sm text-zinc-500">No cards logged for this day yet.</div>
+                        ) : (
+                            <div className="divide-y divide-zinc-800">
+                                {selectedItems.map((item) => {
+                                    const due = toDate(item.dueDate as any);
+                                    const created = toDate(item.createdAt as any);
+                                    return (
+                                        <div key={item.id} className="px-4 py-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="text-sm text-white font-medium truncate">{item.title}</div>
+                                                <span
+                                                    className="text-[10px] px-2 py-0.5 rounded-full border"
+                                                    style={{
+                                                        color: statusColor(item.status),
+                                                        borderColor: statusColor(item.status) + '66',
+                                                        backgroundColor: statusColor(item.status) + '14'
+                                                    }}
+                                                >
+                                                    {item.status}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 text-xs text-zinc-500 flex flex-wrap gap-3">
+                                                <span>Category: {item.category || 'Uncategorized'}</span>
+                                                {due && <span>Due: {due.toLocaleDateString()}</span>}
+                                                {created && <span>Created: {created.toLocaleDateString()}</span>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
