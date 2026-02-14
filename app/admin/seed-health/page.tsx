@@ -1,0 +1,421 @@
+
+'use client';
+
+import { useState } from 'react';
+import { addCard } from '@/lib/firestore';
+import { Timestamp } from 'firebase/firestore';
+
+const HEALTH_SCENES = [
+    {
+        "id": "scene_001",
+        "script": "",
+        "visualPrompt": "Person lying awake in bed, frustrated, tossing and turning. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_002",
+        "script": "",
+        "visualPrompt": "Close-up of a restless person staring at the ceiling. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_003",
+        "script": "",
+        "visualPrompt": "Fast-paced montage of a clock, bed, and books. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_004",
+        "script": "",
+        "visualPrompt": "Person reading a book in bed with a night lamp on. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_005",
+        "script": "",
+        "visualPrompt": "Book pages flipping rapidly, creating a sense of urgency. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_006",
+        "script": "",
+        "visualPrompt": "Scenes of people using phones, laptops, and eating in bed. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_007",
+        "script": "",
+        "visualPrompt": "Brain illustration with neurons firing actively. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_008",
+        "script": "",
+        "visualPrompt": "Visual of a clock winding forward rapidly. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_009",
+        "script": "",
+        "visualPrompt": "Book with highlighted text and scribbled notes. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_010",
+        "script": "",
+        "visualPrompt": "Cozy, minimalist bedroom with tidy, inviting bed. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_011",
+        "script": "",
+        "visualPrompt": "Person tossing and turning, looking at the clock. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_012",
+        "script": "",
+        "visualPrompt": "Person removing electronics and books from bed. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_013",
+        "script": "",
+        "visualPrompt": "Laptop on bed with paused Netflix screen. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_014",
+        "script": "",
+        "visualPrompt": "Person scrolling on phone, eyes drooping. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_015",
+        "script": "",
+        "visualPrompt": "Person lighting a candle and doing light stretches. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_016",
+        "script": "",
+        "visualPrompt": "Person sipping herbal tea and meditating. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_017",
+        "script": "",
+        "visualPrompt": "Close-up of a phone with meditation app open. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_018",
+        "script": "",
+        "visualPrompt": "Dimming lamp lights and drawing curtains. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_019",
+        "script": "",
+        "visualPrompt": "Bright ceiling light being turned off. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_020",
+        "script": "",
+        "visualPrompt": "Person reading under a warm, dim bedside lamp. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_021",
+        "script": "",
+        "visualPrompt": "Person journaling in bed with a calm expression. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_022",
+        "script": "",
+        "visualPrompt": "Close-up of pen writing in a journal. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_023",
+        "script": "",
+        "visualPrompt": "Healthy snacks and a glass of water on a bedside table. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_024",
+        "script": "",
+        "visualPrompt": "Person looking at a cup of coffee and setting it aside. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_025",
+        "script": "",
+        "visualPrompt": "Close-up of bananas and almonds on a plate. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_026",
+        "script": "",
+        "visualPrompt": "Person drinking water from a stylish bottle. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_027",
+        "script": "",
+        "visualPrompt": "Person holding a bottle of magnesium supplements. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_028",
+        "script": "",
+        "visualPrompt": "Close-up of magnesium supplement bottle and supplement facts. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_029",
+        "script": "",
+        "visualPrompt": "Person adjusting pillows and blankets for comfort. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_030",
+        "script": "",
+        "visualPrompt": "Person adjusting a thermostat and closing blinds. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_031",
+        "script": "",
+        "visualPrompt": "Person wearing a comfortable blackout sleep mask. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_032",
+        "script": "",
+        "visualPrompt": "Visual representation of the brain producing melatonin. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_033",
+        "script": "",
+        "visualPrompt": "Person adjusting a white noise machine on a bedside table. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_034",
+        "script": "",
+        "visualPrompt": "Visual of soothing sound waves emanating from a device. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_035",
+        "script": "",
+        "visualPrompt": "Montage of scenes: person adjusting lights, wearing a sleep mask, and journaling. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_036",
+        "script": "",
+        "visualPrompt": "Person sleeping peacefully in an uncluttered bed. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_037",
+        "script": "",
+        "visualPrompt": "Visual of time-lapse of night sky transitioning to a bright morning. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_038",
+        "script": "",
+        "visualPrompt": "Person waking up with a smile, stretching in bed. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_039",
+        "script": "",
+        "visualPrompt": "Person confidently making their bed, ready for the day. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_040",
+        "script": "",
+        "visualPrompt": "Person looking satisfied, checking off items on a sleep checklist. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_041",
+        "script": "",
+        "visualPrompt": "Close-up of a comment section with positive feedback. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    },
+    {
+        "id": "scene_042",
+        "script": "",
+        "visualPrompt": "YouTube page with like, subscribe, and bell icons highlighted. Comic book style, graphic novel art, bold lines, high contrast red black and white color palette, landscape 16:9 aspect ratio",
+        "image": "",
+        "video": "",
+        "status": "draft"
+    }
+];
+
+export default function SeedHealthPage() {
+    const [status, setStatus] = useState<'idle' | 'seeding' | 'success' | 'error'>('idle');
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSeed = async () => {
+        setStatus('seeding');
+        setError(null);
+        try {
+            await addCard({
+                title: "Health Factory: Sleep Video",
+                description: "Automated video generation project about sleep hygiene and magnesium.",
+                category: "YouTube",
+                status: "in-progress",
+                priority: "high",
+                dueDate: null,
+                tags: ["Health", "Automation", "Shorts"],
+                checklist: [],
+                links: [],
+                scenes: HEALTH_SCENES as any, // Type cast for now
+                order: 0,
+            });
+            setStatus('success');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || "Failed to seed data");
+            setStatus('error');
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 p-6">
+            <div className="max-w-md w-full text-center space-y-6">
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-vermilion-400 to-vermilion-600">
+                    Health Factory Seeder
+                </h1>
+                <p className="text-zinc-400">
+                    Click below to create the "Health Factory: Sleep Video" card with {HEALTH_SCENES.length} pre-populated scenes.
+                </p>
+
+                {status === 'idle' && (
+                    <button
+                        onClick={handleSeed}
+                        className="w-full py-3 px-4 bg-vermilion-500 hover:bg-vermilion-600 rounded-lg font-medium transition-colors"
+                    >
+                        Create Project
+                    </button>
+                )}
+
+                {status === 'seeding' && (
+                    <div className="flex justify-center">
+                        <div className="w-8 h-8 border-4 border-vermilion-500/30 border-t-vermilion-500 rounded-full animate-spin" />
+                    </div>
+                )}
+
+                {status === 'success' && (
+                    <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-4 rounded-lg">
+                        <h3 className="font-bold mb-1">Success!</h3>
+                        <p className="text-sm">Project created. You can verify it in the Dashboard.</p>
+                        <a href="/" className="inline-block mt-4 text-white underline hover:text-green-300">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                )}
+
+                {status === 'error' && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
+                        <h3 className="font-bold mb-1">Error</h3>
+                        <p className="text-sm">{error}</p>
+                        <button onClick={handleSeed} className="mt-4 text-sm underline">Try Again</button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
