@@ -15,19 +15,14 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { FirestoreCard, updateCard } from '@/lib/firestore';
 import { Plus } from 'lucide-react';
 import KanbanCard from './KanbanCard';
+import { KANBAN_COLUMNS } from '../shared/constants';
+import { TaskStatus } from '../types';
 
 interface KanbanBoardProps {
     cards: FirestoreCard[];
     onEditCard: (card: FirestoreCard) => void;
     onNewCard: () => void;
 }
-
-const columns = [
-    { id: 'backlog', title: 'Backlog', color: '#737373', description: 'Ideas & plans' },
-    { id: 'in-progress', title: 'In Progress', color: '#ffa198', description: 'Currently working' },
-    { id: 'review', title: 'Review', color: '#ff6b5e', description: 'Needs attention' },
-    { id: 'complete', title: 'Complete', color: '#ff3d2e', description: 'Done!' },
-] as const;
 
 function DroppableColumn({
     id, title, color, description, cards, onEditCard, onNewCard,
@@ -42,8 +37,8 @@ function DroppableColumn({
             ref={setNodeRef}
             className="kanban-column min-w-[280px] snap-center md:snap-align-none flex-shrink-0 md:flex-shrink md:min-w-0"
             style={{
-                borderColor: isOver ? 'var(--color-vermilion-500)' : undefined,
-                boxShadow: isOver ? '0 0 20px rgba(255, 61, 46, 0.15)' : undefined,
+                borderColor: isOver ? 'var(--blue)' : undefined,
+                boxShadow: isOver ? '0 0 20px rgba(37, 99, 235, 0.15)' : undefined,
                 transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
         >
@@ -72,7 +67,7 @@ function DroppableColumn({
             <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>{description}</p>
 
             <SortableContext items={cards.map((c) => c.id!)} strategy={verticalListSortingStrategy}>
-                <div className="flex-1 space-y-2 overflow-y-auto">
+                <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
                     {cards.map((card) => (
                         <KanbanCard key={card.id} card={card} onEdit={onEditCard} />
                     ))}
@@ -110,10 +105,10 @@ export default function KanbanBoard({ cards, onEditCard, onNewCard }: KanbanBoar
         const cardId = active.id as string;
         const targetId = over.id as string;
 
-        const isColumn = columns.some((col) => col.id === targetId);
+        const isColumn = KANBAN_COLUMNS.some((col) => col.id === targetId);
         const newStatus = isColumn
-            ? (targetId as FirestoreCard['status'])
-            : cards.find((c) => c.id === targetId)?.status;
+            ? (targetId as TaskStatus)
+            : (cards.find((c) => c.id === targetId)?.status as TaskStatus);
 
         if (!newStatus) return;
 
@@ -126,13 +121,13 @@ export default function KanbanBoard({ cards, onEditCard, onNewCard }: KanbanBoar
         });
     };
 
-    const getCardsForColumn = (status: FirestoreCard['status']) =>
+    const getCardsForColumn = (status: TaskStatus) =>
         cards.filter((card) => card.status === status);
 
     return (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="flex gap-4 h-full overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none">
-                {columns.map((column) => (
+                {KANBAN_COLUMNS.map((column) => (
                     <DroppableColumn
                         key={column.id}
                         id={column.id}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   FirestoreCard,
   FirestoreCategory,
@@ -9,19 +9,20 @@ import {
   initializeDefaultCategoriesFirestore,
 } from '@/lib/firestore';
 import { useAppStore } from '@/lib/store';
-import KanbanBoard from '@/components/KanbanBoard';
+import KanbanBoard from '@/components/dashboard/kanban/KanbanBoard';
+import CalendarView from '@/components/dashboard/calendar/CalendarView';
+import TimelineView from '@/components/dashboard/timeline/TimelineView';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import StatsBar from '@/components/StatsBar';
 import EmptyState from '@/components/EmptyState';
 import CardModal from '@/components/CardModal';
 import CategoryModal from '@/components/CategoryModal';
-import TimelineView from '@/components/TimelineView';
 import PortfolioView from '@/components/PortfolioView';
 import DashboardView from '@/components/DashboardView';
 import Inbox from '@/components/Inbox';
-import ProductionView from '@/components/ProductionView';
-import CalendarView from '@/components/CalendarView';
+import { Editor } from '@/components/dashboard/Editor';
+import { Studio } from '@/components/dashboard/Studio';
 
 export default function Home() {
   const [cards, setCards] = useState<FirestoreCard[]>([]);
@@ -33,6 +34,27 @@ export default function Home() {
   const [editingCategory, setEditingCategory] = useState<FirestoreCategory | null>(null);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
   const { selectedCategory, viewMode, searchQuery, sidebarCollapsed, setSidebarCollapsed } = useAppStore();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const mainScrollRef = useRef<HTMLElement>(null);
+  const parentScrollRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll on view change
+  useEffect(() => {
+    // Immediate reset
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    if (mainScrollRef.current) mainScrollRef.current.scrollTop = 0;
+    if (parentScrollRef.current) parentScrollRef.current.scrollTop = 0;
+
+    // Delayed reset to handle render/mount race conditions (especially with Inbox)
+    const timer = setTimeout(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+      if (mainScrollRef.current) mainScrollRef.current.scrollTop = 0;
+      if (parentScrollRef.current) parentScrollRef.current.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [viewMode, selectedCategory]);
 
   useEffect(() => {
     let unsubCards: (() => void) | null = null;
@@ -156,8 +178,8 @@ export default function Home() {
 
   const hasCards = filteredCards.length > 0;
 
-  // Check if current selected category is "Production"
-  const isProductionView = selectedCategory === 'Production';
+  // Check if current selected category is "Production" or "Production Studio"
+  const isProductionView = selectedCategory === 'Production' || selectedCategory === 'Production Studio';
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
@@ -182,7 +204,10 @@ export default function Home() {
         />
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div
+        ref={parentScrollRef}
+        className="flex-1 flex flex-col overflow-hidden relative"
+      >
         {/* Animated dot-grid background */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -208,12 +233,15 @@ export default function Home() {
           }}
         />
 
-        <Header onNewCard={handleNewCard} />
+        {viewMode !== 'dashboard' && <Header onNewCard={handleNewCard} />}
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 relative z-10">
+        <main
+          ref={mainScrollRef}
+          className="flex-1 overflow-hidden relative z-10 flex flex-col"
+        >
           {/* Firebase error banner */}
           {firebaseError && (
-            <div className="mb-4 px-4 py-3 rounded-lg text-sm" style={{
+            <div className="shrink-0 mb-4 px-4 py-3 rounded-lg text-sm mx-4 mt-4" style={{
               backgroundColor: 'rgba(255, 61, 46, 0.1)',
               border: '1px solid rgba(255, 61, 46, 0.3)',
               color: 'var(--color-vermilion-300)',
@@ -224,28 +252,36 @@ export default function Home() {
 
           {/* If Production category is selected, show Airtable view */}
           {isProductionView ? (
-            <ProductionView />
+            <Studio />
           ) : (
             <>
-              {viewMode === 'dashboard' && (
+              {viewMode === 'dashboard' ? (
                 <DashboardView onNewCard={handleNewCard} onEditCard={handleEditCard} />
-              )}
-
-              {viewMode === 'inbox' && <Inbox />}
-
-              {viewMode === 'kanban' && (
-                <>
-                  <StatsBar />
-                  {hasCards ? (
-                    <KanbanBoard cards={filteredCards as any} onEditCard={handleEditCard as any} onNewCard={handleNewCard} />
-                  ) : (
-                    <EmptyState onCreateCard={handleNewCard} />
+              ) : (
+                <div
+                  className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6"
+                  ref={scrollRef}
+                >
+                  {viewMode === 'inbox' && <Inbox />}
+                  {viewMode === 'editor' && <Editor />}
+                  {viewMode === 'studio' && <Studio />}
+                  {viewMode === 'kanban' && (
+                    <div className="h-full flex flex-col">
+                      <StatsBar />
+                      {hasCards ? (
+                        <div className="flex-1 min-h-0">
+                          <KanbanBoard cards={filteredCards as any} onEditCard={handleEditCard as any} onNewCard={handleNewCard} />
+                        </div>
+                      ) : (
+                        <EmptyState onCreateCard={handleNewCard} />
+                      )}
+                    </div>
                   )}
-                </>
+                  {viewMode === 'timeline' && <TimelineView />}
+                  {viewMode === 'portfolio' && <PortfolioView />}
+                  {viewMode === 'calendar' && <CalendarView />}
+                </div>
               )}
-              {viewMode === 'timeline' && <TimelineView />}
-              {viewMode === 'portfolio' && <PortfolioView />}
-              {viewMode === 'calendar' && <CalendarView />}
             </>
           )}
         </main>

@@ -39,7 +39,18 @@ export interface VideoScene {
     visualPrompt: string;
     image: string; // URL
     video: string; // URL
+    title?: string;
+    author?: string;
     status: 'draft' | 'ready-review' | 'approved' | 'revision';
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    notes?: string;
+    tags?: string[];
+    type?: 'youtube' | 'tiktok' | 'reel';
+    duration?: string;
+    size?: string; // e.g. "1080x1920"
+    visibility?: 'public' | 'private' | 'unlisted';
+    createdAt?: number;
+    modifiedAt?: number;
 }
 
 export interface FirestoreCard {
@@ -154,8 +165,10 @@ export async function initializeDefaultCategoriesFirestore() {
     const defaults = [
         { name: 'Projects', icon: 'Rocket', color: '#ff3d2e', order: 0 },
         { name: 'Ideas', icon: 'Lightbulb', color: '#eab308', order: 1 },
-        { name: 'YouTube', icon: 'Video', color: '#f97316', order: 2 },
+        { name: 'Production Studio', icon: 'Video', color: '#f97316', order: 2 },
         { name: 'Resources', icon: 'BookOpen', color: '#3b82f6', order: 3 },
+        { name: 'KDP', icon: 'Book', color: '#8b5cf6', order: 4 },
+        { name: 'Memories', icon: 'Camera', color: '#ec4899', order: 5 },
     ];
 
     const batch = writeBatch(db);

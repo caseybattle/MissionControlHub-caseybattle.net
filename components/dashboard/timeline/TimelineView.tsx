@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { FirestoreCard, subscribeToCards } from '@/lib/firestore';
 import { useAppStore } from '@/lib/store';
-import { Calendar, ArrowRight, CheckCircle, Clock, Play, Eye, Tag } from 'lucide-react';
+import { Clock, Tag } from 'lucide-react';
+import { STATUS_CONFIG } from '../shared/constants';
+import { TaskStatus } from '../types';
 
 export default function TimelineView() {
     const { selectedCategory } = useAppStore();
@@ -71,14 +73,9 @@ export default function TimelineView() {
 }
 
 function TimelineCard({ card }: { card: FirestoreCard }) {
-    const statusConfig: Record<string, { icon: typeof CheckCircle; label: string; color: string }> = {
-        'backlog': { icon: Clock, label: 'Backlog', color: '#888' },
-        'in-progress': { icon: Play, label: 'In Progress', color: '#ffa198' },
-        'review': { icon: Eye, label: 'Review', color: '#ff6b5e' },
-        'complete': { icon: CheckCircle, label: 'Complete', color: '#ff3d2e' },
-    };
-
-    const config = statusConfig[card.status] || statusConfig['backlog'];
+    const statusKey = (card.status || 'backlog') as TaskStatus;
+    // Fallback to backlog if status is unknown in config
+    const config = STATUS_CONFIG[statusKey] || STATUS_CONFIG['backlog'];
     const StatusIcon = config.icon;
     const time = card.updatedAt?.toDate
         ? card.updatedAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

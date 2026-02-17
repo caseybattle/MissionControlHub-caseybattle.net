@@ -8,8 +8,8 @@ interface AppState {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
 
-    viewMode: 'dashboard' | 'kanban' | 'timeline' | 'portfolio' | 'inbox' | 'calendar';
-    setViewMode: (mode: 'dashboard' | 'kanban' | 'timeline' | 'portfolio' | 'inbox' | 'calendar') => void;
+    viewMode: 'dashboard' | 'kanban' | 'timeline' | 'portfolio' | 'inbox' | 'calendar' | 'editor' | 'studio';
+    setViewMode: (mode: 'dashboard' | 'kanban' | 'timeline' | 'portfolio' | 'inbox' | 'calendar' | 'editor' | 'studio') => void;
 
     selectedTags: string[];
     toggleTag: (tag: string) => void;

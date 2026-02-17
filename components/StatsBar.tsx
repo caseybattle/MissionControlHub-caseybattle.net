@@ -23,44 +23,49 @@ export default function StatsBar() {
     const completionRate = totalCards > 0 ? Math.round((completed / totalCards) * 100) : 0;
 
     const stats = [
-        { label: 'Total Projects', value: totalCards, suffix: '', icon: Layers, color: '#ff3d2e' },
-        { label: 'In Progress', value: inProgress, suffix: '', icon: Clock, color: '#f97316' },
-        { label: 'Completion Rate', value: completionRate, suffix: '%', icon: CheckCircle, color: '#10b981' },
-        { label: 'Overdue', value: overdueCount, suffix: '', icon: AlertCircle, color: overdueCount > 0 ? '#ef4444' : '#6b7280' },
+        { label: 'PROJECTS', value: totalCards, suffix: '', icon: Layers, color: 'var(--blue)' },
+        { label: 'ACTIVE', value: inProgress, suffix: '', icon: Clock, color: 'var(--text-secondary)' },
+        { label: 'DONE', value: completionRate, suffix: '%', icon: CheckCircle, color: 'var(--ok)' },
+        { label: 'OVERDUE', value: overdueCount, suffix: '', icon: AlertCircle, color: overdueCount > 0 ? 'var(--err)' : 'var(--muted)' },
     ];
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {stats.map((stat) => {
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {stats.map((stat, i) => {
                 const Icon = stat.icon;
                 return (
                     <div
                         key={stat.label}
-                        className="rounded-xl p-4 transition-all duration-200"
+                        className="group relative overflow-hidden rounded-lg p-3 transition-all duration-200 hover:bg-[var(--panel)]"
                         style={{
-                            backgroundColor: 'var(--color-surface-elevated)',
-                            border: '1.5px solid var(--color-border)',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = `${stat.color}60`;
-                            e.currentTarget.style.boxShadow = `0 4px 16px ${stat.color}15`;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--color-border)';
-                            e.currentTarget.style.boxShadow = 'none';
+                            backgroundColor: 'var(--bg-1)',
+                            border: '1px solid var(--stroke)',
                         }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg" style={{ backgroundColor: `${stat.color}15` }}>
-                                <Icon className="w-4 h-4" style={{ color: stat.color }} />
-                            </div>
+                        <div className="flex items-center justify-between">
                             <div>
-                                <div className="text-2xl font-bold" style={{ color: stat.color }}>
+                                <div className="text-[10px] font-bold tracking-widest mb-1" style={{ color: 'var(--muted)' }}>
+                                    {stat.label}
+                                </div>
+                                <div className="text-2xl font-bold font-mono" style={{ color: stat.color, fontFamily: 'var(--font-orbitron)' }}>
                                     {stat.value}{stat.suffix}
                                 </div>
-                                <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{stat.label}</div>
+                            </div>
+                            <div
+                                className="p-2 rounded-md transition-colors group-hover:bg-[var(--surface-elevated)]"
+                                style={{ color: stat.color, opacity: 0.8 }}
+                            >
+                                <Icon className="w-5 h-5" />
                             </div>
                         </div>
+
+                        {/* Decorative corner accent */}
+                        <div
+                            className="absolute bottom-0 right-0 w-8 h-8 opacity-10 pointer-events-none"
+                            style={{
+                                background: `radial-gradient(circle at bottom right, ${stat.color}, transparent 70%)`
+                            }}
+                        />
                     </div>
                 );
             })}

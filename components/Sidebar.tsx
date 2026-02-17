@@ -6,6 +6,7 @@ import { FirestoreCard, FirestoreCategory, subscribeToCards, deleteCategory } fr
 import * as Icons from 'lucide-react';
 import { LucideIcon, MessageSquare } from 'lucide-react';
 import DictationModal from './DictationModal';
+import { BattleLabsLogo } from '@/components/dashboard/ui/Logo';
 
 interface SidebarProps {
     categories: { id?: string; name: string; icon: string; color: string; order: number }[];
@@ -56,7 +57,8 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
     };
 
     const viewModes: { key: typeof viewMode; label: string; icon: LucideIcon }[] = [
-        { key: 'dashboard', label: 'Dashboard', icon: Icons.LayoutDashboard },
+        { key: 'dashboard', label: 'Home', icon: Icons.Home },
+        { key: 'editor', label: 'Editor', icon: Icons.FileText },
         { key: 'inbox', label: 'Inbox', icon: Icons.MessageSquare },
         { key: 'kanban', label: 'Kanban', icon: Icons.Columns3 },
         { key: 'calendar', label: 'Calendar', icon: Icons.CalendarDays },
@@ -73,7 +75,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                 <button
                     onClick={() => setSidebarCollapsed(false)}
                     className="p-2 rounded-lg mb-6 transition-colors"
-                    style={{ color: 'var(--color-vermilion-500)' }}
+                    style={{ color: 'var(--blue)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-hover)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
@@ -87,7 +89,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                             onClick={() => setViewMode(key)}
                             className="p-2 rounded-lg transition-colors"
                             style={viewMode === key
-                                ? { backgroundColor: 'rgba(255, 61, 46, 0.1)', color: 'var(--color-vermilion-400)' }
+                                ? { backgroundColor: 'rgba(0, 86, 179, 0.15)', color: 'var(--blue)' }
                                 : { color: 'var(--color-text-tertiary)' }
                             }
                             title={label}
@@ -121,7 +123,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                                 className="p-2 rounded-lg transition-colors"
                                 style={
                                     selectedCategory === category.name
-                                        ? { backgroundColor: 'rgba(255, 61, 46, 0.1)', color: 'var(--color-vermilion-400)' }
+                                        ? { backgroundColor: 'rgba(0, 86, 179, 0.15)', color: 'var(--blue)' }
                                         : { color: 'var(--color-text-tertiary)' }
                                 }
                                 title={category.name}
@@ -143,16 +145,19 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
             >
                 {/* Logo */}
                 <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
-                    <div>
-                        <h1
-                            className="text-xl font-bold bg-clip-text text-transparent"
-                            style={{ backgroundImage: 'linear-gradient(to right, var(--color-vermilion-500), var(--color-vermilion-400))' }}
-                        >
-                            Mission Control
-                        </h1>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                            Your command center
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <BattleLabsLogo className="w-8 h-8" />
+                        <div>
+                            <h1
+                                className="text-lg font-bold bg-clip-text text-transparent font-[family-name:var(--font-orbitron)] tracking-wider"
+                                style={{ backgroundImage: 'linear-gradient(to right, var(--blue), #60a5fa)' }}
+                            >
+                                MISSION CONTROL
+                            </h1>
+                            <p className="text-[10px] mt-0.5 font-mono tracking-widest uppercase" style={{ color: 'var(--color-text-tertiary)' }}>
+                                Command Center
+                            </p>
+                        </div>
                     </div>
                     <button
                         onClick={() => setSidebarCollapsed(true)}
@@ -168,7 +173,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                 {/* Live Clock + Mic */}
                 <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
                     <div className="flex items-center gap-2">
-                        <Icons.Clock className="w-4 h-4" style={{ color: 'var(--color-vermilion-400)' }} />
+                        <Icons.Clock className="w-4 h-4" style={{ color: 'var(--blue)' }} />
                         <span className="text-sm font-mono font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                             {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
@@ -176,8 +181,8 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                     <button
                         onClick={() => setShowDictation(true)}
                         className="p-2 rounded-lg transition-colors"
-                        style={{ color: 'var(--color-vermilion-400)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,61,46,0.1)'; }}
+                        style={{ color: 'var(--blue)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0, 86, 179, 0.1)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                         title="Voice Dictation"
                     >
@@ -195,7 +200,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                                 style={
                                     viewMode === key
-                                        ? { backgroundColor: 'rgba(255, 61, 46, 0.1)', color: 'var(--color-vermilion-400)' }
+                                        ? { backgroundColor: 'rgba(0, 86, 179, 0.15)', color: 'var(--blue)' }
                                         : { color: 'var(--color-text-secondary)' }
                                 }
                                 onMouseEnter={(e) => {
@@ -224,9 +229,9 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                             style={
                                 selectedCategory === null
                                     ? {
-                                        backgroundColor: 'rgba(255, 61, 46, 0.1)',
-                                        color: 'var(--color-vermilion-400)',
-                                        borderLeft: '3px solid var(--color-vermilion-500)',
+                                        backgroundColor: 'rgba(0, 86, 179, 0.15)',
+                                        color: 'var(--blue)',
+                                        borderLeft: '3px solid var(--blue)',
                                     }
                                     : { color: 'var(--color-text-secondary)', borderLeft: '3px solid transparent' }
                             }
@@ -256,16 +261,16 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                                     style={
                                         selectedCategory === category.name
                                             ? {
-                                                backgroundColor: 'rgba(255, 61, 46, 0.1)',
-                                                color: 'var(--color-vermilion-400)',
-                                                borderLeft: '3px solid var(--color-vermilion-500)',
+                                                backgroundColor: 'rgba(0, 86, 179, 0.15)',
+                                                color: 'var(--blue)',
+                                                borderLeft: '3px solid var(--blue)',
                                             }
                                             : { color: 'var(--color-text-secondary)', borderLeft: '3px solid transparent' }
                                     }
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Icon className="w-4 h-4" style={{ color: category.color }} />
-                                        <span className="font-medium text-sm">{category.name}</span>
+                                        <Icon className="w-4 h-4" style={{ color: 'var(--blue)' }} />
+                                        <span className="font-medium text-sm">{category.name === 'Production' ? 'Production Studio' : category.name}</span>
                                     </div>
                                     {count > 0 && (
                                         <span

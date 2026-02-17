@@ -5,38 +5,63 @@
 }
 
 @theme {
-  /* Black & Vermilion — HIGH CONTRAST edition */
-  --color-background: #0a0a0a;
-  --color-surface: #111111;
-  --color-surface-elevated: #1a1a1a;
-  --color-surface-hover: #252525;
-  --color-border: #555555;
-  --color-border-bright: #666666;
-  --color-border-glow: rgba(255, 61, 46, 0.25);
+  /* Black & Blue — HIGH CONTRAST edition */
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-elevated: #111111;
+  --color-surface-hover: #1a1a1a;
+  --color-border: #999999;
+  /* Even brighter */
+  /* Much brighter border as requested */
+  --color-border-bright: #cccccc;
+  --color-border-glow: rgba(0, 86, 179, 0.6);
 
-  --color-vermilion-50: #fff1f0;
-  --color-vermilion-100: #ffe1de;
-  --color-vermilion-200: #ffc7c2;
-  --color-vermilion-300: #ffa198;
-  --color-vermilion-400: #ff6b5e;
-  --color-vermilion-500: #ff3d2e;
-  --color-vermilion-600: #ed1c0c;
-  --color-vermilion-700: #c81409;
-  --color-vermilion-800: #a5140d;
-  --color-vermilion-900: #881712;
+  /* Battle Labs Compatibility Layer */
+  --bg-0: #000000;
+  --bg-1: #050505;
+  --panel: #0a0a0a;
+  --panel-2: #111111;
+  --stroke: #555555;
+  /* Brighter stroke */
+  --stroke-2: #777777;
+  --text: #ffffff;
+  --text-secondary: #e5e5e5;
+  --muted: #a0a0a0;
+  --muted-2: #bfbfbf;
+  --blue: #0056b3;
+  --ok: #22c55e;
+  --late: #eab308;
+  --err: #ef4444;
+  --idle: #737373;
+  --tab-active: #ffffff;
+  --tab-inactive: #a0a0a0;
+  --r: 0.75rem;
+
+  --color-vermilion-50: #eff6ff;
+  --color-vermilion-100: #dbeafe;
+  --color-vermilion-200: #bfdbfe;
+  --color-vermilion-300: #93c5fd;
+  --color-vermilion-400: #60a5fa;
+  --color-vermilion-500: #0056b3;
+  /* Override to Blue */
+  --color-vermilion-600: #2563eb;
+  --color-vermilion-700: #1d4ed8;
+  --color-vermilion-800: #1e40af;
+  --color-vermilion-900: #1e3a8a;
 
   --color-text-primary: #ffffff;
-  --color-text-secondary: #d4d4d4;
-  --color-text-tertiary: #999999;
+  --color-text-secondary: #e5e5e5;
+  --color-text-tertiary: #a0a0a0;
 
   /* Shadows — bold and visible */
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  --shadow-vermilion: 0 4px 24px rgba(255, 61, 46, 0.4);
-  --shadow-vermilion-lg: 0 8px 48px rgba(255, 61, 46, 0.55);
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.4);
+  --shadow-vermilion: 0 4px 24px rgba(0, 86, 179, 0.4);
+  --shadow-vermilion-lg: 0 8px 48px rgba(0, 86, 179, 0.55);
+  --shadow-card: 0 2px 12px rgba(255, 255, 255, 0.1);
+  /* Brighter shadow for visibility */
   --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
-  --shadow-glow-sm: 0 0 8px rgba(255, 61, 46, 0.15);
-  --shadow-glow-md: 0 0 16px rgba(255, 61, 46, 0.2);
+  --shadow-glow-sm: 0 0 8px rgba(0, 86, 179, 0.25);
+  --shadow-glow-md: 0 0 16px rgba(0, 86, 179, 0.3);
 
   /* Animations */
   --animate-fade-in: fadeIn 0.3s ease-in-out;
@@ -91,14 +116,30 @@
 
     0%,
     100% {
-      box-shadow: 0 0 6px rgba(255, 61, 46, 0.15);
+      box-shadow: 0 0 6px rgba(0, 86, 179, 0.25);
     }
 
     50% {
-      box-shadow: 0 0 12px rgba(255, 61, 46, 0.25);
+      box-shadow: 0 0 12px rgba(0, 86, 179, 0.4);
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
     }
   }
 }
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 20s linear infinite;
+}
+
 
 /* ── Base ── */
 body {
@@ -111,27 +152,44 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(255, 61, 46, 0.35);
+  background: rgba(0, 86, 179, 0.5);
   color: #fff;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-0);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: #333333;
   border-radius: 999px;
+  border: 1px solid var(--bg-0);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-vermilion-500);
+  background: var(--blue);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333333;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--blue);
 }
 
 /* ── Utility Classes ── */
@@ -149,14 +207,14 @@ body {
 /* ═══════════════════════════════════════════════ */
 
 .btn-vermilion {
-  background: linear-gradient(135deg, #ff5545 0%, #ff3322 50%, #e81600 100%);
+  background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
   color: #fff;
   font-weight: 700;
   padding: 0.625rem 1.5rem;
   border-radius: 0.625rem;
   box-shadow: var(--shadow-vermilion), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 120, 100, 0.5);
+  border: 1px solid rgba(0, 86, 179, 0.5);
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
@@ -164,8 +222,8 @@ body {
 .btn-vermilion:hover {
   box-shadow: var(--shadow-vermilion-lg), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px) scale(1.03);
-  background: linear-gradient(135deg, #ff6555 0%, #ff4433 50%, #f02010 100%);
-  border-color: rgba(255, 150, 130, 0.6);
+  background: linear-gradient(135deg, #0066cc 0%, #0056b3 100%);
+  border-color: rgba(0, 86, 179, 0.8);
 }
 
 .btn-vermilion:active {

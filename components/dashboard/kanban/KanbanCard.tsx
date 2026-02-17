@@ -1,12 +1,20 @@
-
 'use client';
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FirestoreCard, deleteCard, PRIORITY_CONFIG, getDueDateInfo } from '@/lib/firestore';
+import { FirestoreCard, deleteCard, getDueDateInfo } from '@/lib/firestore';
 import { Calendar, Tag as TagIcon, Pencil, Trash2, MoreVertical, CheckSquare, Link2, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import Portal from './Portal';
+import Portal from '../../Portal';
+// Fix import path for Portal if it's in components/dashboard/Portal.tsx or components/Portal.tsx
+// Portal is currently in components/KanbanCard.tsx imports as './Portal', meaning components/Portal.tsx
+// So from components/dashboard/kanban/KanbanCard.tsx it is ../../Portal.tsx ? No, wait.
+// Original file was components/KanbanCard.tsx importing ./Portal. So Portal is components/Portal.tsx.
+// New path: components/dashboard/kanban/KanbanCard.tsx -> ../../Portal.tsx.
+
+import { PRIORITY_CONFIG } from '../shared/constants';
+import { getTimeAgo } from '../shared/utils';
+import { TaskPriority } from '../types';
 
 interface KanbanCardProps {
     card: FirestoreCard;
@@ -92,22 +100,7 @@ export default function KanbanCard({ card, onEdit }: KanbanCardProps) {
         setMenuPosition(null);
     };
 
-    const getTimeAgo = (timestamp: any) => {
-        if (!timestamp) return 'Just now';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const mins = Math.floor(diff / 60000);
-        if (mins < 1) return 'Just now';
-        if (mins < 60) return `${mins}m ago`;
-        const hours = Math.floor(mins / 60);
-        if (hours < 24) return `${hours}h ago`;
-        const days = Math.floor(hours / 24);
-        if (days < 7) return `${days}d ago`;
-        return date.toLocaleDateString();
-    };
-
-    const priorityConfig = PRIORITY_CONFIG[card.priority || 'medium'];
+    const priorityConfig = PRIORITY_CONFIG[(card.priority || 'medium') as TaskPriority];
     const dueDateInfo = getDueDateInfo(card.dueDate);
     const checklistDone = (card.checklist || []).filter((i) => i.done).length;
     const checklistTotal = (card.checklist || []).length;

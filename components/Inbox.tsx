@@ -28,7 +28,8 @@ interface Message {
 export default function Inbox() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // Subscribe to messages
     useEffect(() => {
@@ -39,8 +40,14 @@ export default function Inbox() {
                 ...doc.data()
             })) as Message[];
             setMessages(msgs);
-            // Scroll to bottom
-            setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+            // Safe scroll to bottom that doesn't affect parent containers
+            if (containerRef.current) {
+                setTimeout(() => {
+                    const el = containerRef.current;
+                    if (el) el.scrollTop = el.scrollHeight;
+                }, 100);
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -89,7 +96,10 @@ export default function Inbox() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            <div
+                ref={containerRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
+            >
                 {messages.length === 0 && (
                     <div className="text-center text-zinc-600 mt-10">
                         <p>No messages yet.</p>
@@ -129,7 +139,6 @@ export default function Inbox() {
                         </div>
                     );
                 })}
-                <div ref={scrollRef} />
             </div>
 
             {/* Input Area */}
