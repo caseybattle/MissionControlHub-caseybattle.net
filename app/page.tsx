@@ -217,14 +217,8 @@ function HomeContent() {
         ref={parentScrollRef}
         className="flex-1 flex flex-col overflow-hidden relative"
       >
-        {/* Animated dot-grid background */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255, 61, 46, 0.05) 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
+        {/* Technical square-grid background */}
+        <div className="absolute inset-0 square-grid pointer-events-none opacity-20" />
 
         {/* Vermilion ambient glow */}
         <div
