@@ -51,13 +51,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 {/* Background Aesthetics */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-vermilion-500/10 blur-[120px] rounded-full" />
-                    <div
-                        className="absolute inset-0 opacity-20"
-                        style={{
-                            backgroundImage: 'radial-gradient(circle at 2px 2px, #fff 1px, transparent 0)',
-                            backgroundSize: '40px 40px'
-                        }}
-                    />
+                    <div className="absolute inset-0 square-grid opacity-20" />
                 </div>
 
                 <div className="relative z-10 w-full max-w-md p-8 bg-zinc-900/50 border border-white/10 backdrop-blur-xl rounded-3xl shadow-2xl">
