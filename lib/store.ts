@@ -17,6 +17,9 @@ interface AppState {
 
     sidebarCollapsed: boolean;
     setSidebarCollapsed: (collapsed: boolean) => void;
+
+    editorStatus: { isSaving: boolean; lastSaved: number | null };
+    setEditorStatus: (status: { isSaving?: boolean; lastSaved?: number | null }) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -42,6 +45,12 @@ export const useAppStore = create<AppState>()(
 
             sidebarCollapsed: false,
             setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+
+            editorStatus: { isSaving: false, lastSaved: null },
+            setEditorStatus: (status) =>
+                set((state) => ({
+                    editorStatus: { ...state.editorStatus, ...status },
+                })),
         }),
         {
             name: 'mission-control-storage',

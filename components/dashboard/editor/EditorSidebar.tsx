@@ -30,11 +30,11 @@ export function EditorSidebar({
     return (
         <>
             <motion.div
-                initial={{ width: sidebarOpen ? 260 : 0 }}
-                animate={{ width: sidebarOpen ? 260 : 0 }}
+                initial={{ width: sidebarOpen ? 220 : 0 }}
+                animate={{ width: sidebarOpen ? 220 : 0 }}
                 className="bg-[var(--bg-1)] border-r border-[var(--stroke)] flex-shrink-0 overflow-hidden h-full"
             >
-                <div className="w-[260px] h-full flex flex-col">
+                <div className="w-[220px] h-full flex flex-col">
                     {/* Sidebar Header */}
                     <div className="p-4 border-b border-[var(--stroke)]">
                         <div className="flex items-center justify-between mb-4">
@@ -104,13 +104,14 @@ export function EditorSidebar({
                 </div>
             </motion.div>
 
-            {/* Toggle Sidebar Button */}
+            {/* Toggle Sidebar Button - Fixed positioning to ensure visibility */}
             {!sidebarOpen && (
                 <button
                     onClick={() => setSidebarOpen(true)}
-                    className="absolute left-4 top-20 z-10 p-2 bg-[var(--panel)] border border-[var(--stroke)] rounded hover:bg-[var(--panel-2)] transition-colors text-[var(--text)]"
+                    className="absolute left-4 top-[88px] z-[100] p-2 bg-[var(--panel)] border border-[var(--stroke)] rounded-lg hover:bg-[var(--panel-2)] hover:border-[var(--blue)] hover:text-[var(--blue)] transition-all shadow-xl flex items-center gap-2 group"
                 >
-                    <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
+                    <ChevronRight className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--blue)]" />
+                    <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--blue)]">Open Sidebar</span>
                 </button>
             )}
         </>

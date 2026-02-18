@@ -19,9 +19,10 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
     const [allCards, setAllCards] = useState<FirestoreCard[]>([]);
     const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
     const [showDictation, setShowDictation] = useState(false);
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
     useEffect(() => {
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -82,7 +83,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                     <Icons.PanelLeftOpen className="w-5 h-5" />
                 </button>
 
-                <div className="space-y-1 mb-4">
+                <div className="space-y-1 mb-4 w-full flex flex-col items-center">
                     {viewModes.map(({ key, icon: Icon, label }) => (
                         <button
                             key={key}
@@ -101,7 +102,7 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
 
                 <div className="w-8 h-px mb-4" style={{ backgroundColor: 'var(--color-border)' }} />
 
-                <div className="space-y-2">
+                <div className="space-y-2 w-full flex flex-col items-center">
                     <button
                         onClick={() => setSelectedCategory(null)}
                         className="p-2 rounded-lg transition-colors"
@@ -144,7 +145,8 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                 style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
                 {/* Logo */}
-                <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
+                {/* Logo */}
+                <div className="p-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <BattleLabsLogo className="w-8 h-8" />
                         <div>
@@ -171,11 +173,12 @@ export default function Sidebar({ categories, onNewCategory, onEditCategory }: S
                 </div>
 
                 {/* Live Clock + Mic */}
-                <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
+                {/* Live Clock + Mic */}
+                <div className="px-5 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Icons.Clock className="w-4 h-4" style={{ color: 'var(--blue)' }} />
                         <span className="text-sm font-mono font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            {currentTime ? `${currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} EST` : ''}
                         </span>
                     </div>
                     <button

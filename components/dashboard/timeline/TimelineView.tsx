@@ -48,14 +48,14 @@ export default function TimelineView() {
                     <div key={dateLabel}>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="px-3 py-1.5 rounded-lg text-sm font-semibold" style={{
-                                background: 'linear-gradient(135deg, rgba(255, 61, 46, 0.15), rgba(255, 61, 46, 0.05))',
-                                color: 'var(--color-vermilion-400)',
-                                border: '1px solid rgba(255, 61, 46, 0.2)',
+                                background: 'linear-gradient(135deg, var(--blue-20), var(--blue-5))',
+                                color: 'var(--blue)',
+                                border: '1px solid var(--blue-30)',
                             }}>
                                 {dateLabel}
                             </div>
-                            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-                            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                            <div className="flex-1 h-px" style={{ background: 'var(--stroke)' }} />
+                            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                                 {dateCards.length} item{dateCards.length > 1 ? 's' : ''}
                             </span>
                         </div>
@@ -68,7 +68,7 @@ export default function TimelineView() {
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -82,26 +82,22 @@ function TimelineCard({ card }: { card: FirestoreCard }) {
         : '';
 
     return (
-        <div className="timeline-node pb-6">
+        <div className="timeline-node pb-6 pl-4 border-l border-[var(--stroke)] ml-4 relative">
+            <div className="absolute left-[-5px] top-6 w-2.5 h-2.5 rounded-full bg-[var(--blue)] border-2 border-[var(--bg-0)] box-content" />
             <div
-                className="rounded-xl p-4 transition-all duration-200"
-                style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1.5px solid var(--color-border)' }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 61, 46, 0.3)';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.boxShadow = 'none';
+                className="rounded-xl p-4 transition-all duration-200 group hover:border-[var(--blue)] hover:bg-[var(--panel-2)]/50"
+                style={{
+                    backgroundColor: 'var(--panel)',
+                    border: '1px solid var(--stroke)',
                 }}
             >
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{card.title}</h3>
-                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{time}</span>
+                    <h3 className="font-semibold text-[var(--text)]">{card.title}</h3>
+                    <span className="text-xs text-[var(--text-tertiary)]">{time}</span>
                 </div>
 
                 {card.description && (
-                    <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{card.description}</p>
+                    <p className="text-sm mb-3 line-clamp-2 text-[var(--text-secondary)]">{card.description}</p>
                 )}
 
                 <div className="flex items-center gap-3 flex-wrap">

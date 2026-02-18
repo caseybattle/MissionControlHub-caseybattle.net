@@ -2,7 +2,7 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Search, Plus, Menu, HelpCircle } from 'lucide-react';
+import { Search, Plus, Menu, HelpCircle, RotateCw, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import HelpModal from './HelpModal';
 
@@ -11,7 +11,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onNewCard }: HeaderProps) {
-    const { searchQuery, setSearchQuery, sidebarCollapsed, setSidebarCollapsed } = useAppStore();
+    const { searchQuery, setSearchQuery, sidebarCollapsed, setSidebarCollapsed, viewMode, editorStatus } = useAppStore();
     const [showHelp, setShowHelp] = useState(false);
 
     return (
@@ -55,6 +55,23 @@ export default function Header({ onNewCard }: HeaderProps) {
             </div>
 
             <div className="flex items-center gap-2">
+                {/* Editor Save Status */}
+                {viewMode === 'editor' && (
+                    <div className="flex items-center gap-2 mr-2 text-xs font-medium text-[var(--text-secondary)] animate-fade-in">
+                        {editorStatus?.isSaving ? (
+                            <>
+                                <RotateCw className="w-3 h-3 animate-spin text-[var(--blue)]" />
+                                <span>Saving...</span>
+                            </>
+                        ) : editorStatus?.lastSaved ? (
+                            <>
+                                <CheckCircle2 className="w-3 h-3 text-[var(--ok)]" />
+                                <span>Saved {new Date(editorStatus.lastSaved).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </>
+                        ) : null}
+                    </div>
+                )}
+
                 {/* Help Button */}
                 <button
                     onClick={() => setShowHelp(true)}

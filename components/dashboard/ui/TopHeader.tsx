@@ -48,7 +48,7 @@ export function TopHeader() {
     ] as const;
 
     return (
-        <Panel className="h-[52px] px-5">
+        <Panel className="h-[52px] bg-[color:var(--bg-1)] px-5">
             <div className="flex h-full items-center justify-between">
                 <div className="flex items-center gap-6">
                     <button onClick={() => setViewMode('dashboard')} className="flex items-center gap-2 hover:opacity-80">

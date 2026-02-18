@@ -14,247 +14,373 @@ import {
     Eye,
     Tag,
     FolderOpen,
+    Plus,
+    Search,
+    Filter,
+    MoreHorizontal,
+    ChevronDown
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PortfolioView() {
     const { selectedCategory } = useAppStore();
-    const [viewStyle, setViewStyle] = useState<'grid' | 'list'>('grid');
+    const [viewStyle, setViewStyle] = useState<'list'>('list'); // Forced to list
     const [selectedCard, setSelectedCard] = useState<FirestoreCard | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState('');
     const [allCards, setAllCards] = useState<FirestoreCard[]>([]);
+    const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+
+    const toggleCategory = (category: string) => {
+        setCollapsedCategories(prev => ({
+            ...prev,
+            [category]: !prev[category]
+        }));
+    };
 
     useEffect(() => {
         const unsub = subscribeToCards(setAllCards);
         return unsub;
     }, []);
 
-    const cards = allCards
+    // Filter and Sort
+    const filteredCards = allCards
         .filter((c) => !selectedCategory || c.category === selectedCategory)
+        .filter((c) => filterStatus === 'all' || c.status === filterStatus)
+        .filter((c) =>
+            searchQuery ? (
+                c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                c.tags.includes(searchQuery.toLowerCase())
+            ) : true
+        )
         .sort((a, b) => {
-            if (a.status === 'complete' && b.status !== 'complete') return -1;
-            if (b.status === 'complete' && a.status !== 'complete') return 1;
+            // Sort by status (active first), then date
+            if (a.status === 'complete' && b.status !== 'complete') return 1;
+            if (b.status === 'complete' && a.status !== 'complete') return -1;
             const aTime = a.updatedAt?.toDate?.()?.getTime() || 0;
             const bTime = b.updatedAt?.toDate?.()?.getTime() || 0;
             return bTime - aTime;
         });
 
-    const filteredCards = cards.filter((card) => filterStatus === 'all' || card.status === filterStatus);
+    // Group by Category
+    const groupedCards = filteredCards.reduce((acc, card) => {
+        const category = card.category || 'Uncategorized';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(card);
+        return acc;
+    }, {} as Record<string, FirestoreCard[]>);
 
-    if (cards.length === 0) {
+    // Fixed order for specific categories if they exist, others alphabetical
+    const priorityCategories = ['Builds', 'Websites', 'YouTube Projects', 'Ideas'];
+    const sortedCategories = Object.keys(groupedCards).sort((a, b) => {
+        const indexA = priorityCategories.indexOf(a);
+        const indexB = priorityCategories.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+
+    const statusCounts: Record<string, number> = {
+        all: allCards.length,
+        'in-progress': allCards.filter((c) => c.status === 'in-progress').length,
+        review: allCards.filter((c) => c.status === 'review').length,
+        backlog: allCards.filter((c) => c.status === 'backlog').length,
+        complete: allCards.filter((c) => c.status === 'complete').length,
+    };
+
+    if (allCards.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20" style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                <FolderOpen className="w-12 h-12 mb-4" style={{ color: 'var(--color-vermilion-500)', opacity: 0.6 }} />
-                <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>No Projects Yet</h2>
-                <p style={{ color: 'var(--color-text-secondary)' }}>Create cards to see them in your portfolio gallery.</p>
+            <div className="flex flex-col items-center justify-center py-32 text-center overflow-hidden">
+                <div className="relative mb-6">
+                    <FolderOpen className="w-16 h-16 text-[var(--text-secondary)] opacity-50" />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[var(--blue)] rounded-full flex items-center justify-center">
+                        <Plus className="w-4 h-4 text-white" />
+                    </div>
+                </div>
+                <h2 className="text-xl font-bold text-[var(--text)] mb-2">Portfolio Empty</h2>
+                <p className="text-[var(--text-secondary)] max-w-sm">
+                    Start by creating a new project card to populate your portfolio.
+                </p>
             </div>
         );
     }
 
-    const statusCounts: Record<string, number> = {
-        all: cards.length,
-        complete: cards.filter((c) => c.status === 'complete').length,
-        'in-progress': cards.filter((c) => c.status === 'in-progress').length,
-        review: cards.filter((c) => c.status === 'review').length,
-        backlog: cards.filter((c) => c.status === 'backlog').length,
-    };
-
     return (
-        <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>Portfolio</h2>
-                    <p style={{ color: 'var(--color-text-secondary)' }}>Showcase your projects and builds</p>
-                </div>
-                <div className="flex rounded-lg overflow-hidden" style={{ border: '1.5px solid var(--color-border)' }}>
-                    <button onClick={() => setViewStyle('grid')} className="p-2 transition-colors" style={{
-                        backgroundColor: viewStyle === 'grid' ? 'var(--color-vermilion-500)' : 'var(--color-surface-elevated)',
-                        color: viewStyle === 'grid' ? '#fff' : 'var(--color-text-tertiary)',
-                    }}>
-                        <Grid3X3 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setViewStyle('list')} className="p-2 transition-colors" style={{
-                        backgroundColor: viewStyle === 'list' ? 'var(--color-vermilion-500)' : 'var(--color-surface-elevated)',
-                        color: viewStyle === 'list' ? '#fff' : 'var(--color-text-tertiary)',
-                    }}>
-                        <List className="w-4 h-4" />
-                    </button>
+        <div className="h-full flex flex-col overflow-hidden animate-fade-in">
+            {/* Header Section */}
+            <div className="flex-shrink-0 px-6 pt-1 pb-3 border-b border-[var(--stroke)] bg-[var(--bg-1)]/50 backdrop-blur-md z-10">
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold text-[var(--text)] tracking-tight">Portfolio</h2>
+                            <p className="text-sm text-[var(--text-secondary)] mt-0.5">Showcase & Management</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {/* New Project Button - Only Action needed now */}
+                            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--blue)] hover:bg-[var(--color-vermilion-600)] text-white rounded-lg font-medium transition-colors shadow-lg shadow-[var(--blue)]/20">
+                                <Plus className="w-4 h-4" />
+                                <span>New Project</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Filters & Search */}
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar mask-gradient-r">
+                            {(['all', 'in-progress', 'review', 'backlog', 'complete'] as const).map((status) => {
+                                const labels: Record<string, string> = { all: 'All', complete: 'Completed', 'in-progress': 'In Progress', review: 'Review', backlog: 'Backlog' };
+                                const isActive = filterStatus === status;
+                                return (
+                                    <button
+                                        key={status}
+                                        onClick={() => setFilterStatus(status)}
+                                        className={`
+                                            px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex items-center gap-2 border
+                                            ${isActive
+                                                ? 'bg-[var(--blue)]/10 border-[var(--blue)]/30 text-[var(--blue)]'
+                                                : 'bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-[var(--panel-2)] hover:text-[var(--text)]'
+                                            }
+                                        `}
+                                    >
+                                        <span>{labels[status]}</span>
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-[var(--blue)] text-white' : 'bg-[var(--panel-2)] text-[var(--text-tertiary)]'}`}>
+                                            {statusCounts[status]}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="relative group min-w-[200px]">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--blue)] transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search projects..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-3 py-1.5 bg-[var(--panel-2)] border border-[var(--stroke)] rounded-lg text-sm text-[var(--text)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--blue)] focus:ring-1 focus:ring-[var(--blue)] transition-all"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {(['all', 'complete', 'in-progress', 'review', 'backlog'] as const).map((status) => {
-                    const labels: Record<string, string> = { all: 'All', complete: 'Completed', 'in-progress': 'In Progress', review: 'In Review', backlog: 'Backlog' };
-                    return (
-                        <button key={status} onClick={() => setFilterStatus(status)}
-                            className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
-                            style={filterStatus === status ? {
-                                background: 'linear-gradient(135deg, rgba(255, 61, 46, 0.15), rgba(255, 61, 46, 0.05))',
-                                color: 'var(--color-vermilion-400)', border: '1px solid rgba(255, 61, 46, 0.3)',
-                            } : {
-                                backgroundColor: 'var(--color-surface-elevated)',
-                                color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)',
-                            }}
-                        >
-                            {labels[status]}<span className="ml-2 opacity-60">{statusCounts[status]}</span>
-                        </button>
-                    );
-                })}
-            </div>
+            {/* Main Content - Grouped Table Sections */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-8 custom-scrollbar">
+                {sortedCategories.length > 0 ? (
+                    sortedCategories.map((category) => (
+                        <div key={category} className="space-y-3 animate-slide-up">
+                            {/* Section Header - Clickable to Collapse */}
+                            <button
+                                onClick={() => toggleCategory(category)}
+                                className="flex items-center gap-3 w-full group focus:outline-none"
+                            >
+                                <div className={`
+                                    p-1 rounded-md transition-transform duration-200 
+                                    ${collapsedCategories[category] ? '-rotate-90' : 'rotate-0'}
+                                    text-[var(--text-tertiary)] group-hover:text-[var(--text)]
+                                `}>
+                                    <ChevronDown className="w-4 h-4" />
+                                </div>
+                                <h3 className="text-sm font-bold text-[var(--text-secondary)] tracking-wider uppercase px-3 py-1 bg-[var(--panel-2)] border border-[var(--stroke)] rounded-lg shadow-sm group-hover:border-[var(--blue)] group-hover:text-[var(--text)] transition-all flex items-center gap-2">
+                                    {category}
+                                    <span className="text-[10px] opacity-60 bg-[var(--bg-1)] px-1.5 py-0.5 rounded-full border border-[var(--stroke)]">
+                                        {groupedCards[category].length}
+                                    </span>
+                                </h3>
+                                {/* The user specifically likes the line going all the way across */}
+                                <div className="h-px flex-1 bg-[var(--stroke)] group-hover:bg-[var(--blue)]/30 transition-colors" />
+                            </button>
 
-            {viewStyle === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredCards.map((card) => (
-                        <PortfolioGridCard key={card.id} card={card} onClick={() => setSelectedCard(card)} />
-                    ))}
-                </div>
-            ) : (
-                <div className="space-y-2">
-                    {filteredCards.map((card) => (
-                        <PortfolioListCard key={card.id} card={card} onClick={() => setSelectedCard(card)} />
-                    ))}
-                </div>
-            )}
+                            {/* Section List (Table Rows) */}
+                            <AnimatePresence>
+                                {!collapsedCategories[category] && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="space-y-1 pl-2 border-l border-[var(--stroke)]/30 ml-2.5">
+                                            {/* Table Header Row (Only show if open) */}
+                                            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider bg-[var(--bg-1)]/30 rounded-t-lg mb-1">
+                                                <div className="col-span-5 md:col-span-4">Project</div>
+                                                <div className="hidden md:block col-span-2">Tags</div>
+                                                <div className="hidden md:block col-span-2">Status</div>
+                                                <div className="hidden md:block col-span-2">Updated</div>
+                                                <div className="col-span-7 md:col-span-2 text-right">Actions</div>
+                                            </div>
 
-            {selectedCard && <PortfolioDetail card={selectedCard} onClose={() => setSelectedCard(null)} />}
-        </div>
-    );
-}
-
-function PortfolioGridCard({ card, onClick }: { card: FirestoreCard; onClick: () => void }) {
-    const statusColors: Record<string, string> = { 'backlog': '#888', 'in-progress': '#ffa198', 'review': '#ff6b5e', 'complete': '#ff3d2e' };
-    const getCategoryGradient = (category: string) => {
-        const hue = [...category].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
-        return `linear-gradient(135deg, hsl(${hue}, 60%, 15%), hsl(${hue + 30}, 50%, 10%))`;
-    };
-    const dateStr = card.updatedAt?.toDate ? card.updatedAt.toDate().toLocaleDateString() : '';
-
-    return (
-        <div className="portfolio-card cursor-pointer group" onClick={onClick}>
-            <div className="h-32 relative flex items-center justify-center" style={{ background: getCategoryGradient(card.category) }}>
-                <span className="text-4xl opacity-30 group-hover:opacity-50 transition-opacity">
-                    {card.category === 'YouTube Projects' ? '🎥' : card.category === 'Ideas' ? '💡' : card.category === 'Websites' ? '🌐' : card.category === 'Builds' ? '🔨' : card.category === 'Memories' ? '❤️' : '📋'}
-                </span>
-                <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full" style={{ backgroundColor: statusColors[card.status], boxShadow: `0 0 8px ${statusColors[card.status]}` }} />
-            </div>
-            <div className="p-4">
-                <h3 className="font-semibold mb-1 line-clamp-1" style={{ color: 'var(--color-text-primary)' }}>{card.title}</h3>
-                {card.description && <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{card.description}</p>}
-                <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{card.category}</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{dateStr}</span>
-                </div>
-                {card.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                        {card.tags.slice(0, 3).map((tag) => <span key={tag} className="tag">{tag}</span>)}
-                        {card.tags.length > 3 && <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>+{card.tags.length - 3}</span>}
+                                            {groupedCards[category].map((card) => (
+                                                <PortfolioListCard key={card.id} card={card} onClick={() => setSelectedCard(card)} />
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    ))
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-[var(--text-secondary)] opacity-60">
+                        <Search className="w-8 h-8 mb-2" />
+                        <p>No projects match your filter</p>
                     </div>
                 )}
+                {/* Bottom spacer */}
+                <div className="h-20" />
             </div>
+
+            <AnimatePresence>
+                {selectedCard && <PortfolioDetail card={selectedCard} onClose={() => setSelectedCard(null)} />}
+            </AnimatePresence>
         </div>
     );
 }
 
+// ----------------------------------------------------------------------------
+// Components
+// ----------------------------------------------------------------------------
+
 function PortfolioListCard({ card, onClick }: { card: FirestoreCard; onClick: () => void }) {
-    const statusLabels: Record<string, string> = { 'backlog': 'Backlog', 'in-progress': 'In Progress', 'review': 'Review', 'complete': 'Complete' };
-    const statusColors: Record<string, string> = { 'backlog': '#888', 'in-progress': '#ffa198', 'review': '#ff6b5e', 'complete': '#ff3d2e' };
-    const dateStr = card.updatedAt?.toDate ? card.updatedAt.toDate().toLocaleDateString() : '';
+    const statusColors: Record<string, string> = {
+        'backlog': 'var(--text-tertiary)',
+        'in-progress': 'var(--blue)',
+        'review': 'var(--late)',
+        'complete': 'var(--ok)'
+    };
+    const statusLabels: Record<string, string> = {
+        'backlog': 'Backlog',
+        'in-progress': 'In Progress',
+        'review': 'Review',
+        'complete': 'Complete'
+    };
 
     return (
-        <div className="flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all duration-200"
-            style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1.5px solid var(--color-border)' }}
+        <div
             onClick={onClick}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255, 61, 46, 0.3)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.3)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+            className="group grid grid-cols-12 gap-4 items-center p-3 sm:px-4 bg-[var(--panel)] border border-[var(--stroke)] rounded-lg cursor-pointer hover:border-[var(--blue)] hover:bg-[var(--panel-2)] transition-all"
         >
-            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: statusColors[card.status], boxShadow: `0 0 6px ${statusColors[card.status]}` }} />
-            <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{card.title}</h3>
-                {card.description && <p className="text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>{card.description}</p>}
+            {/* Project (Icon + Title) */}
+            <div className="col-span-5 md:col-span-4 flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded bg-[var(--bg-1)] border border-[var(--stroke)] flex items-center justify-center text-sm flex-shrink-0 group-hover:border-[var(--blue)] transition-colors">
+                    {card.category.includes('YouTube') ? '📺' :
+                        card.category.includes('Idea') ? '💡' :
+                            card.category.includes('Web') ? '🌐' : '📦'}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-[var(--text)] truncate group-hover:text-[var(--blue)] transition-colors">
+                        {card.title}
+                    </h4>
+                    {/* Desc only visible on larger screens to save space usually, but here we keep it clean */}
+                    <p className="hidden sm:block text-[11px] text-[var(--text-secondary)] truncate">
+                        {card.description || "No description."}
+                    </p>
+                </div>
             </div>
-            <span className="text-xs px-2 py-1 rounded-md flex-shrink-0" style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>{card.category}</span>
-            <span className="text-xs font-medium px-2 py-1 rounded-md flex-shrink-0" style={{ color: statusColors[card.status], backgroundColor: `${statusColors[card.status]}15`, border: `1px solid ${statusColors[card.status]}30` }}>{statusLabels[card.status]}</span>
-            <span className="text-xs flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>{dateStr}</span>
+
+            {/* Tags (Hidden on mobile) */}
+            <div className="hidden md:flex col-span-2 items-center gap-1 overflow-hidden">
+                {card.tags.slice(0, 2).map(tag => (
+                    <span key={tag} className="px-1.5 py-0.5 rounded bg-[var(--bg-1)] border border-[var(--stroke)] text-[10px] text-[var(--text-secondary)] whitespace-nowrap">
+                        {tag}
+                    </span>
+                ))}
+                {card.tags.length > 2 && <span className="text-[10px] text-[var(--text-tertiary)]">+{card.tags.length - 2}</span>}
+            </div>
+
+            {/* Status */}
+            <div className="hidden md:flex col-span-2 items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColors[card.status] }} />
+                <span className="text-xs text-[var(--text-secondary)]">{statusLabels[card.status]}</span>
+            </div>
+
+            {/* Date */}
+            <div className="hidden md:flex col-span-2 items-center gap-1 text-xs text-[var(--text-tertiary)]">
+                <Clock className="w-3 h-3" />
+                <span>{card.updatedAt?.toDate?.().toLocaleDateString() || '-'}</span>
+            </div>
+
+            {/* Actions / Mobile Status */}
+            <div className="col-span-7 md:col-span-2 flex items-center justify-end gap-3 text-[var(--text-tertiary)]">
+                {/* Mobile-only status indicator */}
+                <div className="md:hidden w-2 h-2 rounded-full" style={{ backgroundColor: statusColors[card.status] }} />
+
+                <div className="p-1 rounded hover:bg-[var(--bg-1)] group-hover:text-[var(--blue)] transition-colors">
+                    <MoreHorizontal className="w-4 h-4" />
+                </div>
+            </div>
         </div>
     );
 }
 
 function PortfolioDetail({ card, onClose }: { card: FirestoreCard; onClose: () => void }) {
-    const statusLabels: Record<string, string> = { 'backlog': 'Backlog', 'in-progress': 'In Progress', 'review': 'Review', 'complete': 'Complete' };
-    const statusColors: Record<string, string> = { 'backlog': '#888', 'in-progress': '#ffa198', 'review': '#ff6b5e', 'complete': '#ff3d2e' };
-
-    const createdStr = card.createdAt?.toDate
-        ? card.createdAt.toDate().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
-        : 'Unknown';
-    const updatedStr = card.updatedAt?.toDate
-        ? card.updatedAt.toDate().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
-        : 'Unknown';
+    // Reusing standard Detail view logic but with improved styles if needed
+    // For brevity, keeping it similar to previous but ensuring it matches theme variables
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-            <div className="absolute inset-0 backdrop-blur-sm" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }} onClick={onClose} />
-            <div className="relative w-full max-w-2xl rounded-2xl overflow-hidden max-h-[80vh] overflow-y-auto" style={{
-                backgroundColor: 'var(--color-surface)',
-                border: '1.5px solid var(--color-border)',
-                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 61, 46, 0.1)',
-                animation: 'slideUp 0.3s ease-out',
-            }}>
-                <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b backdrop-blur-sm z-10" style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(17, 17, 17, 0.9)' }}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: statusColors[card.status], boxShadow: `0 0 8px ${statusColors[card.status]}` }} />
-                        <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{card.title}</h2>
-                    </div>
-                    <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-tertiary)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-hover)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                    ><X className="w-5 h-5" /></button>
-                </div>
-
-                <div className="p-6 space-y-6">
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-sm font-medium px-3 py-1.5 rounded-lg" style={{
-                            color: statusColors[card.status], backgroundColor: `${statusColors[card.status]}15`, border: `1px solid ${statusColors[card.status]}30`,
-                        }}>{statusLabels[card.status]}</span>
-                        <span className="text-sm px-3 py-1.5 rounded-lg" style={{
-                            backgroundColor: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)',
-                        }}>{card.category}</span>
-                    </div>
-
-                    {card.description && (
-                        <div>
-                            <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Description</h3>
-                            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{card.description}</p>
-                        </div>
-                    )}
-
-                    {card.tags.length > 0 && (
-                        <div>
-                            <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Tags</h3>
-                            <div className="flex flex-wrap gap-2">{card.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}</div>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}>
-                            <div className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Created</div>
-                            <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{createdStr}</div>
-                        </div>
-                        <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}>
-                            <div className="text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Last Updated</div>
-                            <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{updatedStr}</div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Assets & Files</h3>
-                        <div className="flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed"
-                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-tertiary)' }}>
-                            <Upload className="w-8 h-8 mb-2 opacity-50" />
-                            <p className="text-sm">Drop files here or click to upload</p>
-                            <p className="text-xs mt-1 opacity-60">Images, thumbnails, documents</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+                layoutId={`card-${card.id}`}
+                className="relative w-full max-w-2xl bg-[var(--panel)] border border-[var(--stroke)] rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto custom-scrollbar"
+                style={{
+                    boxShadow: '0 0 50px -12px rgba(0, 0, 0, 0.5)'
+                }}
+            >
+                {/* Header Image/Gradient */}
+                <div className="h-32 bg-gradient-to-r from-[var(--blue)]/20 to-[var(--color-vermilion-500)]/20 relative">
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                    <div className="absolute -bottom-8 left-8">
+                        <div className="w-16 h-16 rounded-xl bg-[var(--bg-0)] border-2 border-[var(--stroke)] flex items-center justify-center text-3xl shadow-lg">
+                            {card.category.includes('YouTube') ? '📺' :
+                                card.category.includes('Idea') ? '💡' :
+                                    card.category.includes('Web') ? '🌐' : '📦'}
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <div className="pt-10 px-8 pb-8">
+                    <h2 className="text-2xl font-bold text-[var(--text)] mb-2">{card.title}</h2>
+                    <div className="flex items-center gap-2 mb-6 text-sm">
+                        <span className="px-2 py-0.5 rounded-full bg-[var(--panel-2)] border border-[var(--stroke)] text-[var(--text-secondary)]">
+                            {card.category}
+                        </span>
+                        <span className="text-[var(--text-tertiary)]">•</span>
+                        <span className="text-[var(--text-secondary)]">
+                            Updated {card.updatedAt?.toDate?.().toLocaleDateString()}
+                        </span>
+                    </div>
+
+                    <div className="prose prose-invert max-w-none text-[var(--text-secondary)] text-sm leading-relaxed mb-8">
+                        {card.description || "No description provided for this project."}
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold text-[var(--text)] uppercase tracking-wider">Tags</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {card.tags.length > 0 ? card.tags.map(tag => (
+                                <span key={tag} className="px-3 py-1 bg-[var(--panel-2)] hover:bg-[var(--blue)]/10 hover:text-[var(--blue)] hover:border-[var(--blue)]/30 border border-[var(--stroke)] rounded-lg text-sm transition-all cursor-default text-[var(--text-secondary)]">
+                                    {tag}
+                                </span>
+                            )) : <span className="text-[var(--text-tertiary)] text-xs italic">No tags</span>}
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
 }

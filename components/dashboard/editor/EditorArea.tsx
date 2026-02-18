@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FileText, Plus } from 'lucide-react';
 import { Document, BlockType } from './types';
 import { BlockComponent } from './BlockComponent';
+import { PerspectiveGrid } from '../ui/PerspectiveGrid';
 
 interface EditorAreaProps {
     activeDoc: Document | null;
@@ -32,7 +33,7 @@ export function EditorArea({
     return (
         <div className="flex-1 flex flex-col overflow-hidden bg-[var(--bg-0)] relative">
             {/* Background Effects */}
-            <div className="absolute inset-0 square-grid pointer-events-none z-0 opacity-20" />
+            <PerspectiveGrid />
             <div
                 className="absolute top-0 right-0 w-[500px] h-[500px] pointer-events-none z-0"
                 style={{

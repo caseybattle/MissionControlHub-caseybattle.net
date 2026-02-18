@@ -5,7 +5,7 @@ export function Panel({ children, className = "" }: { children: ReactNode; class
         <div
             className={[
                 "rounded-[var(--r)] border border-[color:var(--stroke)] shadow-[var(--shadow-soft)]",
-                "bg-[color:var(--panel)]/80 backdrop-blur-md",
+                "bg-[color:var(--panel)]",
                 className,
             ].join(" ")}
         >

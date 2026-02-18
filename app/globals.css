@@ -142,6 +142,10 @@
 
 
 /* ── Base ── */
+html {
+  font-size: 18px;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-text-primary);

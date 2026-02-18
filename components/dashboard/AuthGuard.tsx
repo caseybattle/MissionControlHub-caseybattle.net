@@ -36,7 +36,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
+            <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]" suppressHydrationWarning>
                 <div className="animate-pulse flex flex-col items-center gap-4">
                     <ShieldCheck className="w-12 h-12 text-vermilion-500 opacity-50" />
                     <span className="text-zinc-500 text-sm font-medium tracking-widest uppercase">Authenticating...</span>
