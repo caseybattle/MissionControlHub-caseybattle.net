@@ -32,13 +32,7 @@ export function EditorArea({
     return (
         <div className="flex-1 flex flex-col overflow-hidden bg-[var(--bg-0)] relative">
             {/* Background Effects */}
-            <div
-                className="absolute inset-0 grid-background pointer-events-none z-0"
-                style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(37, 99, 235, 0.05) 1px, transparent 0)`,
-                    backgroundSize: '40px 40px',
-                }}
-            />
+            <div className="absolute inset-0 square-grid pointer-events-none z-0 opacity-20" />
             <div
                 className="absolute top-0 right-0 w-[500px] h-[500px] pointer-events-none z-0"
                 style={{
