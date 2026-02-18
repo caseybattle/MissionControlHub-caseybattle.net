@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
-import { Send, User, Bot, Smile } from 'lucide-react';
+import { Send, User, Bot, Smile, Download } from 'lucide-react';
 
 // Initialize Firebase (Client Side)
 // We assume parent component or context initializes app, but for safety in this standalone component/view:
@@ -52,6 +52,21 @@ export default function Inbox() {
         return () => unsubscribe();
     }, []);
 
+    const handleExport = () => {
+        const exportData = messages.map(m => ({
+            sender: m.sender,
+            text: m.text,
+            time: m.createdAt ? new Date(m.createdAt.seconds * 1000).toISOString() : 'Unknown'
+        }));
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mission-control-chat-history-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
@@ -89,10 +104,22 @@ export default function Inbox() {
         <div className="flex flex-col h-full bg-[#0a0a0a] rounded-xl border border-zinc-800 overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-zinc-800 bg-[#111] flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <span className="text-vermilion-500">Team Inbox</span>
-                </h2>
-                <span className="text-xs text-zinc-500">Connected to HQ</span>
+                <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <span className="text-vermilion-500">Team Inbox</span>
+                    </h2>
+                    <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-500 text-[10px] font-bold tracking-widest uppercase border border-green-500/20">
+                        Live Uplink
+                    </span>
+                </div>
+                <button
+                    onClick={handleExport}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium transition-all border border-zinc-700"
+                    title="Download Chat History"
+                >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export History</span>
+                </button>
             </div>
 
             {/* Messages Area */}

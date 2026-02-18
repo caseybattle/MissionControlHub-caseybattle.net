@@ -1,0 +1,41 @@
+Vercel CLI 50.1.3
+Retrieving projectΓÇª
+Fetching deployments in casbattle19-4656s-projects
+> Production deployments for casbattle19-4656s-projects/mission-ctrl-hub-2026 [145ms]
+https://mission-ctrl-hub-2026-fw2t44o3v-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-b6sbcdqlj-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-ex2xdqebm-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-3sghld6ms-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-96ouvyea7-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-3bxftq88m-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-ei5jk6z77-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-r18uztzzp-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-3yias5t55-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-1tdi9o5af-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-7kfd1lchk-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-9z2uv1e6t-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-2jwyuefmi-casbattle19-4656s-projects.vercel.app
+
+  Age     Deployment                                                                        Status      Environment     Duration     Username             
+  2h      https://mission-ctrl-hub-2026-fw2t44o3v-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      41s          casbattle19-4656     
+  2h      https://mission-ctrl-hub-2026-b6sbcdqlj-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      42s          casbattle19-4656     
+  2h      https://mission-ctrl-hub-2026-ex2xdqebm-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      39s          casbattle19-4656     
+  2h      https://mission-ctrl-hub-2026-3sghld6ms-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      39s          casbattle19-4656     
+  2h      https://mission-ctrl-hub-2026-96ouvyea7-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      40s          casbattle19-4656     
+https://mission-ctrl-hub-2026-nr42k75sg-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-ihgq1imnd-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-p62g2x7ov-casbattle19-4656s-projects.vercel.app
+https://mission-ctrl-hub-2026-aotifmn3l-casbattle19-4656s-projects.vercel.app
+  2h      https://mission-ctrl-hub-2026-3bxftq88m-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      17s          casbattle19-4656     
+  2h      https://mission-ctrl-hub-2026-ei5jk6z77-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      25s          casbattle19-4656     
+  10h     https://mission-ctrl-hub-2026-r18uztzzp-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      26s          casbattle19-4656     
+  10h     https://mission-ctrl-hub-2026-3yias5t55-casbattle19-4656s-projects.vercel.app     ΓùÅ Error     Production      9s           casbattle19-4656     
+  2d      https://mission-ctrl-hub-2026-1tdi9o5af-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      39s          casbattle19-4656     
+  2d      https://mission-ctrl-hub-2026-7kfd1lchk-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      46s          casbattle19-4656     
+  2d      https://mission-ctrl-hub-2026-9z2uv1e6t-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      43s          casbattle19-4656     
+  3d      https://mission-ctrl-hub-2026-2jwyuefmi-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      53s          casbattle19-4656     
+  3d      https://mission-ctrl-hub-2026-nr42k75sg-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      44s          casbattle19-4656     
+  3d      https://mission-ctrl-hub-2026-ihgq1imnd-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      38s          casbattle19-4656     
+  3d      https://mission-ctrl-hub-2026-p62g2x7ov-casbattle19-4656s-projects.vercel.app     ΓùÅ Ready     Production      50s          casbattle19-4656     
+  3d      https://mission-ctrl-hub-2026-aotifmn3l-casbattle19-4656s-projects.vercel.app     ΓùÅ Error     Production      48s          casbattle19-4656     
+

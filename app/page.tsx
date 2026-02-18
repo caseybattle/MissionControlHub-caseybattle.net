@@ -23,8 +23,17 @@ import DashboardView from '@/components/DashboardView';
 import Inbox from '@/components/Inbox';
 import { Editor } from '@/components/dashboard/Editor';
 import { Studio } from '@/components/dashboard/Studio';
+import AuthGuard from '@/components/dashboard/AuthGuard';
 
 export default function Home() {
+  return (
+    <AuthGuard>
+      <HomeContent />
+    </AuthGuard>
+  );
+}
+
+function HomeContent() {
   const [cards, setCards] = useState<FirestoreCard[]>([]);
   const [categories, setCategories] = useState<FirestoreCategory[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
