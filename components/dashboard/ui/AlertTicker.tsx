@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 
 export function AlertTicker() {
     return (
-        <Panel className="h-[32px] bg-[color:var(--bg-1)] px-4 overflow-hidden">
+        <Panel className="h-[32px] px-4 overflow-hidden">
             <div className="flex h-full items-center gap-3">
                 <div className="flex items-center gap-1.5 shrink-0">
                     <AlertTriangle className="w-3.5 h-3.5 text-[color:var(--late)]" />
