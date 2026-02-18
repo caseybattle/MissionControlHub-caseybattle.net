@@ -9,6 +9,7 @@ import { Lock, LogIn, ShieldCheck } from 'lucide-react';
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -19,10 +20,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleLogin = async () => {
+        setError(null);
         try {
             await signInWithPopup(auth, googleProvider);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login failed:", error);
+            setError(error?.message || "Login failed. Please try again.");
+
+            // If popup is blocked or fails, suggest checking authorized domains
+            if (error?.code === 'auth/unauthorized-domain') {
+                setError("This domain is not authorized in Firebase. Please add 'caseybattle.net' to Authorized Domains in Firebase Console.");
+            }
         }
     };
 
@@ -59,6 +67,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                         </div>
                         <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Mission Control</h1>
                         <p className="text-zinc-400 text-sm">Authorized Access Only. Please sign in to enter HQ.</p>
+
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs font-medium">
+                                {error}
+                            </div>
+                        )}
                     </div>
 
                     <button
