@@ -118,7 +118,7 @@ export function LeftSidebar({
     };
 
     return (
-        <Panel className="h-full overflow-hidden flex flex-col">
+        <Panel className="h-full min-h-0 overflow-hidden flex flex-col">
             {/* Removed top legend as requested */}
 
             {/* scroll area */}

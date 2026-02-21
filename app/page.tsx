@@ -240,7 +240,7 @@ function HomeContent() {
 
         <main
           ref={mainScrollRef}
-          className="flex-1 overflow-hidden relative z-10 flex flex-col"
+          className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col"
         >
           {/* Firebase error banner */}
           {firebaseError && (

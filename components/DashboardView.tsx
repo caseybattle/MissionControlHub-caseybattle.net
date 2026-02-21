@@ -17,8 +17,8 @@ export default function DashboardView({
     const [selectedAgent, setSelectedAgent] = useState<AgentItem | null>(null);
 
     return (
-        <div className="relative h-full w-full bg-[color:var(--bg-0)] overflow-hidden">
-            <div className="mx-auto h-full w-full p-2">
+        <div className="relative h-full min-h-0 w-full bg-[color:var(--bg-0)] overflow-hidden">
+            <div className="mx-auto h-full min-h-0 w-full p-2">
                 <div
                     className="
             grid h-full gap-3
